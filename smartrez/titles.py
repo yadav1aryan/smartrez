@@ -4,15 +4,11 @@ from os.path import isfile, join
 import subprocess
 import sys
 import requests
-import bs4
 from urllib.request import urlopen, urlretrieve 
 import urllib
 from django.conf import settings
-from PIL import Image
 from python_pixabay import Pixabay
-import queue
 import threading
-import itertools
 class ImageScraper:
  def __init__(self):
   self.pix = Pixabay('5520434-306800159f2e30420f0743b5c')
