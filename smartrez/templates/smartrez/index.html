@@ -1,0 +1,25 @@
+<head>
+<title>Smartrez</title>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+<style>
+.wrap {
+ text-align: center;
+}
+</style>
+</head>
+<Div class="wrap">
+<h1>Enter Term</h1>
+<form action="{% url 'smartrez:q_create' %}", method="post">
+{% csrf_token %}
+<input type="textbox" name="term" id="term_1"/><br><br>
+Type:
+<input type="checkbox" name="type" id="square"/>
+<label for="#square">Square</label>
+<input type="checkbox" name="type" id="wide"/>
+<label for="#wide">Wide</label>
+<input type="checkbox" name="type" id="tall"/>
+<label for="#tall">Tall</label>
+<input type="submit" value="Search" class="btn btn-info">
+</form>
+</div>

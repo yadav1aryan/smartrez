@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<style>
+html {
+ padding: 5%;
+}
+.main.sel {
+ border: 2px solid #99ff66;
+}
+.main{
+    margin: 25px;
+    border: 2px solid #ccc;
+    -webkit-transition: all 0.4s ease-in-out;
+    transition: border 0.4s;
+    display: inline-block;
+    width: 200px;
+}
+.main:hover {
+ border: 2px solid #99ff66;
+ -webkit-transition: all 0.4s ease-in-out;
+ transition: border 0.4s;
+}
+.image{
+    height:150px;
+    width:200px;
+    z-index: 99;
+    float: left;
+}
+.check{
+    float: right;
+    z-index: 100;
+    margin: -150px 0px 0px;
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+}
+</style>
+</head>
+<body>
+{% for choice in query.img_set.all %}
+     <div class = "main">
+         <img id="img{{forloop.counter}}" class ="image" src="{{choice.thumb_url}}" alt="{{query.term}}_img_{{forloop.counter}}">
+         <input type="checkbox" class="check" id="check{{forloop.counter}}"/>
+     </div>
+{% endfor %}
+<form action="{% url 'smartrez:resize' query.term %}", method="post">
+{% csrf_token %}
+<div class="wrap">
+ <input type="hidden" name = "act_img" id="act_img" value="" size="40"/>
+ <input type="text" name = "width" placeholder="Width"/> x <input type="text" name = "height" placeholder="Height"/>
+ <input id="sub" type="submit" value="Resize" class="btn btn-info">
+</div>
+</form>
+</body>
+<script>
+$(document).ready(function(){
+  $('.main img').on('click', function(){
+    if($(this).parent().hasClass('sel') == true) {
+     $(this).parent().removeClass('sel')
+     $(this).parent().find('.check').prop('checked', false)
+    }
+    else {
+    $(this).parent().addClass('sel');
+    $(this).parent().find('.check').prop('checked', true)
+    console.log('log');
+    }
+  });
+
+});
+$('#sub').on('click', function() {
+   $('.main img').each(function() {
+    console.log($(this).attr('src'));
+    if($(this).parent().hasClass('sel') == true) {
+    var prevact = $('#act_img').val();
+    $('#act_img').val(prevact + $(this).attr('src') + ',');
+   }
+   console.log($('#act_img').val());
+});
+});
+</script>
+</html>
+

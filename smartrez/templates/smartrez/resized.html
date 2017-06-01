@@ -1,0 +1,27 @@
+<head>
+<title>Resized Image</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+.wrap {
+ text-align: center;
+}
+.button {
+  position: absolute;
+  top: 50%;
+ }
+</style>
+</head>
+<body>
+{% for file in filelist %}
+	<div class="wrap">
+		<img src="/smartrez{{MEDIA_URL}}{{query.term}}/{{file}}">
+		<br>
+		<br>
+	</div>
+{% endfor %}
+<div class="wrap">
+<a href="/smartrez{{MEDIA_URL}}{{zipname}}" download="smartrez_{{zipname}}"><button type="button">Download</button></a>
+</div>
+</body>

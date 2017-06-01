@@ -1,0 +1,22 @@
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+{% load static %}
+<h1>Results for: {{query_name}}</h1>
+{% if error_message %}<p><strong>{{error_message}}</strong></p>{%endif%}
+<form action="{% url 'smartrez:resize' query.term %}", method="post">
+{% csrf_token %}
+{% for choice in query.img_set.all %}
+  <input type="radio" name="chosen" id="choice{{ forloop.counter }}" value = "{{choice.img_path}}"/>
+  <label for="choice{{forloop.counter}}"><img src="/smartrez{{MEDIA_URL}}{{choice.img_path}}"></img></label><br />
+{% endfor %}
+</ul>
+</h3>
+<input type="textbox" name = "width"/> x <input type="textbox" name = "height"/>
+<input type="submit" value="Resize">
+</form>
