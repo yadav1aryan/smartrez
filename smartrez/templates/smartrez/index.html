@@ -12,8 +12,8 @@
 <body>
 <div class="container">
 <div class="row">
-<div ng-view class="col-xs-4"></div>
-<div ng-view class="col-xs-8 content">
+<div ng-view class="col-xs-5"></div>
+<div ng-view class="col-xs-7 content">
 <h1>Enter Term</h1>
 <form action="{% url 'smartrez:q_create' %}", method="post">
 {% csrf_token %}
@@ -21,8 +21,8 @@
 </div>
 </div>
 <div class="row">
-<div ng-view class="col-xs-3 content"></div>
-<div ng-view class="col-xs-4 content">
+<div ng-view class="col-xs-4 content"></div>
+<div ng-view class="col-xs-3 content">
 <h3>Type:</h3>
 <div class='opt'>
 <input type="radio" name="type" id="all" value="all" />
