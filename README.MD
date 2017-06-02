@@ -8,4 +8,4 @@ Dependencies:
  [smartcrop.js-cli](https://github.com/jwagner/smartcrop-cli)  
 Api key for python-pixabay is included in code  
 	
-Run `python manage.py migrate` on from manage.py directory on first run
+Run `python manage.py migrate` from manage.py directory on first run
