@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import SearchQuery, Img, Selected_imgs
+from .models import SearchQuery, Img
 from django.views import generic
 from django.urls import reverse
 from django.template import loader
@@ -18,7 +18,7 @@ def q_create(request):
   q = SearchQuery(term = name)
   q.save()
   IS = ImageScraper()
-  thumb_list, img_list = IS.get_img(srch = request.POST['term'])
+  thumb_list, img_list = IS.get_img(srch = request.POST['term'], type= request.POST['type'])
   for thumb, img in itertools.zip_longest(thumb_list, img_list):
    q.img_set.create(img_url = img, thumb_url = thumb)
   return HttpResponseRedirect(reverse('smartrez:results', args = (name,)))

@@ -12,8 +12,8 @@ import threading
 class ImageScraper:
  def __init__(self):
   self.pix = Pixabay('5520434-306800159f2e30420f0743b5c')
- def get_img(self, srch):
-  cis = self.pix.image_search(q=srch, lang='en', response_group='image_detals', image_type='photo',orientation='horizontal',per_page='60')
+ def get_img(self, srch, type):
+  cis = self.pix.image_search(q=srch, lang='en', response_group='image_detals', image_type=type,orientation='horizontal',per_page='60')
   thumbnail_list = []
   img_list = []
   for img in cis['hits']:

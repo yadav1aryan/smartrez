@@ -8,18 +8,34 @@
 }
 </style>
 </head>
-<Div class="wrap">
+<div class="container">
+<div class="row">
+<div ng-view class="col-xs-4"></div>
+<div ng-view class="col-xs-8 content">
 <h1>Enter Term</h1>
 <form action="{% url 'smartrez:q_create' %}", method="post">
 {% csrf_token %}
 <input type="textbox" name="term" id="term_1"/><br><br>
-Type:
-<input type="checkbox" name="type" id="square"/>
-<label for="#square">Square</label>
-<input type="checkbox" name="type" id="wide"/>
-<label for="#wide">Wide</label>
-<input type="checkbox" name="type" id="tall"/>
-<label for="#tall">Tall</label>
+</div>
+</div>
+<div class="row">
+<div ng-view class="col-xs-3 content"></div>
+<div ng-view class="col-xs-4 content">
+<h3>Type:</h3>
+<input type="radio" name="type" id="all"/>
+<label for="#all">All</label><br>
+<input type="radio" name="type" id="photo"/>
+<label for="#photo">Photo</label><br>
+<input type="radio" name="type" id="illustration"/>
+<label for="#illustration">Illustration</label><br>
+<input type="radio" name="type" id="vector"/>
+<label for="#vector">Vector</label>
+</div>
+<div ng-view class="col-xs-3">
 <input type="submit" value="Search" class="btn btn-info">
+</div>
+</div>
 </form>
+<div ng-view class="col-xs-2"></div>
+</div>
 </div>
