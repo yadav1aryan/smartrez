@@ -11,16 +11,28 @@ import itertools
 import time
 from django.conf import settings
 import os
+from os import listdir
+from os.path import isfile, join
 from os.path import basename
 import zipfile
 def q_create(request):
-  name = request.POST['term'].replace(' ','_')+'_'+str(round(time.time()))
-  q = SearchQuery(term = name)
-  q.save()
-  IS = ImageScraper()
-  thumb_list, img_list = IS.get_img(srch = request.POST['term'], type= request.POST['type'])
-  for thumb, img in itertools.zip_longest(thumb_list, img_list):
-   q.img_set.create(img_url = img, thumb_url = thumb)
+  name = request.POST['term'].replace(' ','_').lower()
+  try:
+   IS = ImageScraper()
+   q = SearchQuery.objects.get(term=name)
+   thumb_list, img_list, pixabay_id = IS.get_img(srch = request.POST['term'], type= request.POST['type'])
+   for img,thumb, id in itertools.zip_longest(img_list, thumb_list, pixabay_id):
+    try:
+     k = q.img_set.get(img_id = id)
+    except:
+     q.img_set.create(img_url = img, thumb_url = thumb, img_id = id)
+  except:
+   q = SearchQuery(term = name)
+   q.save()
+   IS = ImageScraper()
+   thumb_list, img_list, pixabay_id = IS.get_img(srch = request.POST['term'], type= request.POST['type'])
+   for thumb, img, id in itertools.zip_longest(thumb_list, img_list, pixabay_id):
+    q.img_set.create(img_url = img, thumb_url = thumb, img_id = id)
   return HttpResponseRedirect(reverse('smartrez:results', args = (name,)))
 def index(request):
  template = loader.get_template('smartrez/index.html')
@@ -32,35 +44,46 @@ def results(request, query_term):
  context = {'query': query,'query_name' : query.term.replace('_',' ')}
  return HttpResponse(template.render(context, request))
 def smartcrop(width, height, query_term, file):
-    subprocess.run(['smartcrop --width %s --height %s "%s" "%s"' % (width, height, (settings.MEDIA_ROOT + query_term + '/' + file), (settings.MEDIA_ROOT + query_term + '/' + file))],shell=True)
+    subprocess.run(['smartcrop --width %s --height %s "%s" "%s"' % (width, height, (settings.MEDIA_ROOT + query_term + '/edited/' + file), (settings.MEDIA_ROOT + query_term + '/edited/' + file))],shell=True)
 def resize(request, query_term):
  query = get_object_or_404(SearchQuery,term=query_term)
  path = settings.MEDIA_ROOT + query_term
  ziph = zipfile.ZipFile(settings.MEDIA_ROOT + query_term + '.zip', 'w', zipfile.ZIP_DEFLATED)
- urlstring = request.POST['act_img']
- urllist = urlstring.split(',')
- urllist = urllist [:-1]
+ filestring = request.POST['act_img']
+ filelist = filestring.split(',')
+ editlist = filelist [:-1]
+ filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term +'/edited') if isfile(join(settings.MEDIA_ROOT + query_term +'/edited', f))]
  real_imglist = []
- for url in urllist:
-  q_obj = query.img_set.get(thumb_url=url)
-  real_imglist.append(q_obj.img_url)
  width = request.POST['width']
  height = request.POST['height']
- IS = ImageScraper()
- filelist = IS.save_imgs(urllist=real_imglist, query_name = query.term)
  threaddict = {}
  counter = 0
- for file in filelist:
+ for file in editlist:
   threaddict[counter] = threading.Thread(target=smartcrop, args=(width, height,query.term,file))
   threaddict[counter].daemon = True
   threaddict[counter].start()
   counter += 1
  threaddict[counter-1].join()
- for file in filelist:
-         ziph.write(settings.MEDIA_ROOT + query_term +'/' +file, basename(settings.MEDIA_ROOT + query_term +'/' +file))
- ziph.close()
- template = loader.get_template('smartrez/resized.html')
- context = {'query' : query, 'filelist' : filelist, 'zipname' : query_term + '.zip'}
+ # for file in filelist:
+ #         ziph.write(settings.MEDIA_ROOT + query_term +'/' +file, basename(settings.MEDIA_ROOT + query_term +'/' +file))
+ # ziph.close()
+ print(filelist)
+ template = loader.get_template('smartrez/gallery.html')
+ context = {'query' : query, 'filelist' : filelist}
  return HttpResponse(template.render(context, request))
- 
-
+def gallery(request, query_term):
+    query = get_object_or_404(SearchQuery, term=query_term)
+    urlstring = request.POST['act_img']
+    urllist = urlstring.split(',')
+    urllist = urllist[:-1]
+    real_imglist = []
+    for url in urllist:
+        q_obj = query.img_set.get(thumb_url=url)
+        q_obj.uses += 1
+        q_obj.save()
+        real_imglist.append(q_obj.img_url)
+    IS = ImageScraper()
+    filelist = IS.save_imgs(urllist=real_imglist, query_name=query.term)
+    template = loader.get_template('smartrez/gallery.html')
+    context = {'query': query, 'filelist': filelist}
+    return HttpResponse(template.render(context, request))

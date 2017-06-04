@@ -40,16 +40,17 @@ html {
 </style>
 </head>
 <body>
-{% for choice in query.img_set.all %}
+{% for file in filelist %}
      <div class = "main">
-         <img id="img{{forloop.counter}}" class ="image" src="{{choice.thumb_url}}" alt="{{query.term}}_img_{{forloop.counter}}">
+         <img id="img{{forloop.counter}}" class ="image" src="/smartrez{{MEDIA_URL}}{{query.term}}/edited/{{file}}" alt="{{query.term}}_img_{{forloop.counter}}" value="{{file}}">
          <input type="checkbox" class="check" id="check{{forloop.counter}}"/>
      </div>
 {% endfor %}
 <br>
-<form action="{% url 'smartrez:gallery' query.term %}", method="post">
+<form action="{% url 'smartrez:resize' query.term %}", method="post">
 {% csrf_token %}
  <input type="hidden" name = "act_img" id="act_img" value="" size="40"/>
+ <input type="text" name = "width" placeholder="Width"/> x <input type="text" name = "height" placeholder="Height"/>
  <input id="sub" type="submit" value="Resize" class="btn btn-info">
 </form>
 </body>
@@ -73,7 +74,7 @@ $('#sub').on('click', function() {
     console.log($(this).attr('src'));
     if($(this).parent().hasClass('sel') == true) {
     var prevact = $('#act_img').val();
-    $('#act_img').val(prevact + $(this).attr('src') + ',');
+    $('#act_img').val(prevact + $(this).attr('value') + ',');
    }
    console.log($('#act_img').val());
 });
