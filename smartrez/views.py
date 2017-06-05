@@ -15,6 +15,7 @@ from os import listdir
 from os.path import isfile, join
 from os.path import basename
 import zipfile
+from shutil import copyfile
 def q_create(request): # View is called from the first index page from the search button
   name = request.POST['term'].replace(' ','_').lower() #get search query from the POST request
   try:
@@ -51,6 +52,33 @@ def smartcrop(width, height, query_term, file): #function to run in threads to m
     subprocess.run(['magick %s -compress JPEG -quality 80 %s' % ((settings.MEDIA_ROOT + query_term + '/edited/' + file), (settings.MEDIA_ROOT + query_term + '/edited/' + file))],shell=True)
 def resize(request, query_term): #resize function
  query = get_object_or_404(SearchQuery,term=query_term)
+ try:
+     restorefilestring = request.POST['restore']
+     restorefilelist = restorefilestring.split(',')
+     restorelist = restorefilelist[:-1]
+     if len(restorelist) > 0:
+      for file in restorelist:
+         copyfile(settings.MEDIA_ROOT + '%s/base/%s' % (query_term, file),settings.MEDIA_ROOT + '%s/edited/%s' % (query_term, file))
+      template = loader.get_template('smartrez/gallery.html')
+      filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited',f))]
+      context = {'query': query, 'filelist': filelist, 'time' : int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
+      return HttpResponse(template.render(context, request))
+ except:
+  pass
+ try:
+     restorefilestring = request.POST['delete']
+     restorefilelist = restorefilestring.split(',')
+     restorelist = restorefilelist[:-1]
+     if len(restorelist) > 0:
+      for file in restorelist:
+         os.remove(settings.MEDIA_ROOT + '%s/base/%s' % (query_term, file))
+         os.remove(settings.MEDIA_ROOT + '%s/edited/%s' % (query_term, file))
+      template = loader.get_template('smartrez/gallery.html')
+      filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited',f))]
+      context = {'query': query, 'filelist': filelist, 'time' : int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
+      return HttpResponse(template.render(context, request))
+ except:
+  pass
  ziph = zipfile.ZipFile(settings.MEDIA_ROOT + query_term + '.zip', 'w', zipfile.ZIP_DEFLATED)
  filestring = request.POST['act_img'] #get their selected images from POST
  filelist = filestring.split(',') #JS on the gallry page adds filename then a comma
@@ -72,7 +100,7 @@ def resize(request, query_term): #resize function
  # ziph.close() #this stuff is to be put into a download view
  print(filelist)
  template = loader.get_template('smartrez/gallery.html')
- context = {'query' : query, 'filelist' : filelist} #sending list of filenames back to gallery so it can load pictures
+ context = {'query' : query, 'filelist' : filelist, 'time' : int(round(time.time()))} #sending list of filenames back to gallery so it can load pictures
  return HttpResponse(template.render(context, request))
 def gallery(request, query_term): #gallery view, all submit buttons post to this view, so each image in the actimg post gets its use no. increased, will be moved to download view
     query = get_object_or_404(SearchQuery, term=query_term)
@@ -88,11 +116,11 @@ def gallery(request, query_term): #gallery view, all submit buttons post to this
     IS = ImageScraper()
     filelist = IS.save_imgs(urllist=real_imglist, query_name=query.term) #call the image downloader with your selected urls
     template = loader.get_template('smartrez/gallery.html')
-    context = {'query': query, 'filelist': filelist}
+    context = {'query': query, 'filelist': filelist, 'time' : int(round(time.time()))}
     return HttpResponse(template.render(context, request))
 def gallery_l(request, query_term): #gallery loader view
     query = get_object_or_404(SearchQuery, term=query_term) #normal gallery view takes POST requests, this does not, cause you wont post anything when you go to a gallery from the homepage
     filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited', f))]
     template = loader.get_template('smartrez/gallery.html')
-    context = {'query' : query, 'filelist' : filelist}
+    context = {'query' : query, 'filelist' : filelist, 'time' : int(round(time.time()))}
     return HttpResponse(template.render(context, request))
