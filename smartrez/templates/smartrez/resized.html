@@ -14,14 +14,11 @@
 </style>
 </head>
 <body>
-{% for file in filelist %}
-	<div class="wrap">
-		<img src="/smartrez{{MEDIA_URL}}{{query.term}}/{{file}}">
-		<br>
-		<br>
-	</div>
-{% endfor %}
 <div class="wrap">
-<a href="/smartrez{{MEDIA_URL}}{{zipname}}" download="smartrez_{{zipname}}"><button type="button">Download</button></a>
+<a href="/smartrez{{MEDIA_URL}}{{query.term}}/{{editedzipname}}" download="smartrez_{{editedzipname}}"><button type="button">Download Edited</button></a>
+<br>
+<a href="/smartrez{{MEDIA_URL}}{{query.term}}/{{orginalzipname}}" download="smartrez_{{originalzipname}}"><button type="button">Download Original</button></a>
+<br>
+<a href="/smartrez/{{query.term}}/gallery_l"><button type="button">Go back to {{query.term}} gallery</button></a>
 </div>
 </body>

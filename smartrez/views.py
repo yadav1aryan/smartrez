@@ -75,7 +75,6 @@ def delete(request, query_term):
     return HttpResponse(template.render(context, request))
 def resize(request, query_term): #resize function
  query = get_object_or_404(SearchQuery, term=query_term)  # get query
- ziph = zipfile.ZipFile(settings.MEDIA_ROOT + query_term + '.zip', 'w', zipfile.ZIP_DEFLATED)
  filestring = request.POST['act_img'] #get their selected images from POST
  filelist = filestring.split(',') #JS on the gallry page adds filename then a comma
  editlist = filelist [:-1] # last comma is a stray comma so remove last entry resulting from strip
@@ -90,10 +89,6 @@ def resize(request, query_term): #resize function
   threaddict[counter].start()
  for key in threaddict.keys(): #wait for all threads to finish
   threaddict[key].join()
-
- # for file in filelist:
- #         ziph.write(settings.MEDIA_ROOT + query_term +'/' +file, basename(settings.MEDIA_ROOT + query_term +'/' +file))
- # ziph.close() #this stuff is to be put into a download view
  print(filelist)
  template = loader.get_template('smartrez/gallery.html')
  context = {'query' : query, 'filelist' : filelist, 'time' : int(round(time.time()))} #sending list of filenames back to gallery so it can load pictures
@@ -119,4 +114,18 @@ def gallery_l(request, query_term): #gallery loader view
     filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited', f))]
     template = loader.get_template('smartrez/gallery.html')
     context = {'query' : query, 'filelist' : filelist, 'time' : int(round(time.time()))}
+    return HttpResponse(template.render(context, request))
+def download(request, query_term):
+    query = get_object_or_404(SearchQuery, term=query_term)
+    filestring = request.POST['download'] #same as the act img in resize
+    filelist = filestring.split(',')
+    filelist = filelist[:-1]
+    ziph = zipfile.ZipFile(settings.MEDIA_ROOT + query_term +'/' + 'edited_' +query_term + '.zip', 'w', zipfile.ZIP_DEFLATED)
+    zipo = zipfile.ZipFile(settings.MEDIA_ROOT + query_term +'/' + 'original_' +query_term + '.zip', 'w', zipfile.ZIP_DEFLATED)
+    for file in filelist:
+        ziph.write(settings.MEDIA_ROOT + query_term +'/edited/' +file, basename(settings.MEDIA_ROOT + query_term +'/edited/' +file))
+        zipo.write(settings.MEDIA_ROOT + query_term + '/base/' + file,basename(settings.MEDIA_ROOT + query_term + '/base/' + file))
+    ziph.close() #this stuff is to be put into a download view
+    context = {'editedzipname' : 'edited_' + query_term + '.zip', 'query' : query,'originalzipname' : 'original_' + query_term + '.zip'}
+    template = loader.get_template('smartrez/resized.html')
     return HttpResponse(template.render(context, request))

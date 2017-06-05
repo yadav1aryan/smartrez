@@ -63,6 +63,11 @@ html {
 <input type="hidden" name = "delete" id="delete" value="" size="40"/>
 <input id="deletebut" type="submit" value="Delete selected images" class="btn btn-info">
 </form>
+<form action="{% url 'smartrez:download' query.term %}" method = "post">
+{% csrf_token %}
+<input type="hidden" name = "download" id="download" value="" size="40"/>
+<input id="downloadbut" type="submit" value="Download selected images" class="btn btn-info">
+</form>
 <script>
 $(document).ready(function(){
   console.log('ready');
@@ -103,6 +108,15 @@ $('#deletebut').on('click', function() {
     if($(this).parent().hasClass('sel') == true) {
     var prevact = $('#delete').val();
     $('#delete').val(prevact + $(this).attr('value') + ',');
+   }
+   });
+   });
+$('#downloadbut').on('click', function() {
+   $('.main img').each(function() {
+    console.log($(this).attr('src'));
+    if($(this).parent().hasClass('sel') == true) {
+    var prevact = $('#download').val();
+    $('#download').val(prevact + $(this).attr('value') + ',');
    }
    });
    });
