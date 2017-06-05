@@ -55,7 +55,7 @@ html {
 </body>
 <script>
 $(document).ready(function(){
-  $('.main img').on('click', function(){
+  $('.main img').on('click', function(){ //this is just for the sweet visuals, or well, usability/ clicking on image adds a glowing border class so you know its selected, also the checkmark
     if($(this).parent().hasClass('sel') == true) {
      $(this).parent().removeClass('sel')
      $(this).parent().find('.check').prop('checked', false)
@@ -68,14 +68,14 @@ $(document).ready(function(){
   });
 
 });
-$('#sub').on('click', function() {
+$('#sub').on('click', function() { //the main js function that makes it possible, when the submit button is clicked, all divs with the sel class have their urls added to a hidden field, this is posted to the gallery view again 
    $('.main img').each(function() {
     console.log($(this).attr('src'));
     if($(this).parent().hasClass('sel') == true) {
     var prevact = $('#act_img').val();
     $('#act_img').val(prevact + $(this).attr('src') + ',');
    }
-   console.log($('#act_img').val());
+   console.log($('#act_img').val()); //too fast to see this in console but yeah
 });
 });
 </script>

@@ -73,11 +73,12 @@ $(document).ready(function(){
  $('.opt label').on('click', function(){
   $(this).parent().find("input[name='type']").prop('checked', true)
 });
- $('.galopt label').on('click', function(){
+ $('.galopt label').on('click', function(){ //convenience JS so you can click on the name and just expect the radio button to get selected too cause why not, but yeah it makes it easier
   $(this).parent().find("input[name='query']").prop('checked', true);
+  $('#gal').attr('action', '/smartrez/' + $(this).parent().find("input[name='query']").val() + '/gallery_l'); //now for the submit button for gallery to post something, it should know where to post, the action is determined by which radio button is selected
 });
 $('#gal input').on('click', function() {
-  $('#gal').attr('action', '/smartrez/' + $(this).val() + '/gallery_l');
+  $('#gal').attr('action', '/smartrez/' + $(this).val() + '/gallery_l'); //same thing but if you actually click the radio button instead of name
 });
 });
 </script>
