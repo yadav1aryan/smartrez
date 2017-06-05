@@ -50,35 +50,31 @@ def results(request, query_term): #results page view
 def smartcrop(width, height, query_term, file): #function to run in threads to massively speed up operation time
     subprocess.run(['smartcrop --width %s --height %s "%s" "%s"' % (width, height, (settings.MEDIA_ROOT + query_term + '/edited/' + file), (settings.MEDIA_ROOT + query_term + '/edited/' + file))],shell=True)
     subprocess.run(['magick %s -compress JPEG -quality 80 %s' % ((settings.MEDIA_ROOT + query_term + '/edited/' + file), (settings.MEDIA_ROOT + query_term + '/edited/' + file))],shell=True)
-def resize(request, query_term): #resize function
- query = get_object_or_404(SearchQuery,term=query_term)
- try:
-     restorefilestring = request.POST['restore']
-     restorefilelist = restorefilestring.split(',')
-     restorelist = restorefilelist[:-1]
-     if len(restorelist) > 0:
-      for file in restorelist:
-         copyfile(settings.MEDIA_ROOT + '%s/base/%s' % (query_term, file),settings.MEDIA_ROOT + '%s/edited/%s' % (query_term, file))
-      template = loader.get_template('smartrez/gallery.html')
-      filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited',f))]
-      context = {'query': query, 'filelist': filelist, 'time' : int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
-      return HttpResponse(template.render(context, request))
- except:
-  pass
- try:
-     restorefilestring = request.POST['delete']
-     restorefilelist = restorefilestring.split(',')
-     restorelist = restorefilelist[:-1]
-     if len(restorelist) > 0:
-      for file in restorelist:
+def restore(request, query_term):
+    query = get_object_or_404(SearchQuery, term=query_term)
+    restorefilestring = request.POST['restore']
+    restorefilelist = restorefilestring.split(',')
+    restorelist = restorefilelist[:-1]
+    for file in restorelist:
+        copyfile(settings.MEDIA_ROOT + '%s/base/%s' % (query_term, file),settings.MEDIA_ROOT + '%s/edited/%s' % (query_term, file))
+        template = loader.get_template('smartrez/gallery.html')
+    filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited', f))]
+    context = {'query': query, 'filelist': filelist, 'time': int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
+    return HttpResponse(template.render(context, request))
+def delete(request, query_term):
+    query = get_object_or_404(SearchQuery, term=query_term)
+    restorefilestring = request.POST['delete']
+    restorefilelist = restorefilestring.split(',')
+    restorelist = restorefilelist[:-1]
+    for file in restorelist:
          os.remove(settings.MEDIA_ROOT + '%s/base/%s' % (query_term, file))
          os.remove(settings.MEDIA_ROOT + '%s/edited/%s' % (query_term, file))
-      template = loader.get_template('smartrez/gallery.html')
-      filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited',f))]
-      context = {'query': query, 'filelist': filelist, 'time' : int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
-      return HttpResponse(template.render(context, request))
- except:
-  pass
+    template = loader.get_template('smartrez/gallery.html')
+    filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited', f))]
+    context = {'query': query, 'filelist': filelist, 'time': int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
+    return HttpResponse(template.render(context, request))
+def resize(request, query_term): #resize function
+ query = get_object_or_404(SearchQuery, term=query_term)  # get query
  ziph = zipfile.ZipFile(settings.MEDIA_ROOT + query_term + '.zip', 'w', zipfile.ZIP_DEFLATED)
  filestring = request.POST['act_img'] #get their selected images from POST
  filelist = filestring.split(',') #JS on the gallry page adds filename then a comma

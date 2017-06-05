@@ -53,12 +53,12 @@ html {
  <input type="text" name = "width" placeholder="Width"/> x <input type="text" name = "height" placeholder="Height"/>
  <input id="sub" type="submit" value="Resize" class="btn btn-info">
 </form>
-<form action="{% url 'smartrez:resize' query.term %}" method = "post">
+<form action="{% url 'smartrez:restore' query.term %}" method = "post">
 {% csrf_token %}
 <input type="hidden" name = "restore" id="restore" value="" size="40"/>
 <input id="restorebut" type="submit" value="Restore selected images from backup" class="btn btn-info">
 </form>
-<form action="{% url 'smartrez:resize' query.term %}" method = "post">
+<form action="{% url 'smartrez:delete' query.term %}" method = "post">
 {% csrf_token %}
 <input type="hidden" name = "delete" id="delete" value="" size="40"/>
 <input id="deletebut" type="submit" value="Delete selected images" class="btn btn-info">
