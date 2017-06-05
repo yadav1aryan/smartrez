@@ -46,7 +46,7 @@ html {
          <input type="checkbox" class="check" id="check{{forloop.counter}}"/>
      </div>
 {% endfor %}
-<br>
+<br>	
 <form action="{% url 'smartrez:resize' query.term %}", method="post">
 {% csrf_token %}
  <input type="hidden" name = "act_img" id="act_img" value="" size="40"/>

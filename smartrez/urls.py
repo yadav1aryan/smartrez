@@ -7,6 +7,7 @@ urlpatterns = [
 url(r'^$', views.index, name = 'index'),
 url(r'^(?P<query_term>[\w\-]+)/$', views.results, name='results'),
 url(r'^(?P<query_term>[\w\-]+)/gallery/$', views.gallery, name='gallery'),
+url(r'^(?P<query_term>[\w\-]+)/gallery_l/$', views.gallery_l, name='gallery_l'),
 url(r'^q_create$', views.q_create, name='q_create'),
 url(r'^(?P<query_term>[\w\-]+)/resize/$', views.resize, name='resize')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -35,8 +35,11 @@ def q_create(request):
     q.img_set.create(img_url = img, thumb_url = thumb, img_id = id)
   return HttpResponseRedirect(reverse('smartrez:results', args = (name,)))
 def index(request):
+ querylist = []
+ for query in SearchQuery.objects.all():
+  querylist.append(query.term)
  template = loader.get_template('smartrez/index.html')
- context = {}
+ context = {'querylist' : querylist}
  return HttpResponse(template.render(context, request))
 def results(request, query_term):
  query = get_object_or_404(SearchQuery,term=query_term)
@@ -45,6 +48,7 @@ def results(request, query_term):
  return HttpResponse(template.render(context, request))
 def smartcrop(width, height, query_term, file):
     subprocess.run(['smartcrop --width %s --height %s "%s" "%s"' % (width, height, (settings.MEDIA_ROOT + query_term + '/edited/' + file), (settings.MEDIA_ROOT + query_term + '/edited/' + file))],shell=True)
+    subprocess.run(['magick %s -compress JPEG -quality 80 %s' % ((settings.MEDIA_ROOT + query_term + '/edited/' + file), (settings.MEDIA_ROOT + query_term + '/edited/' + file))],shell=True)
 def resize(request, query_term):
  query = get_object_or_404(SearchQuery,term=query_term)
  path = settings.MEDIA_ROOT + query_term
@@ -57,13 +61,13 @@ def resize(request, query_term):
  width = request.POST['width']
  height = request.POST['height']
  threaddict = {}
- counter = 0
- for file in editlist:
+ for counter, file in enumerate(editlist):
   threaddict[counter] = threading.Thread(target=smartcrop, args=(width, height,query.term,file))
   threaddict[counter].daemon = True
   threaddict[counter].start()
-  counter += 1
- threaddict[counter-1].join()
+ for key in threaddict.keys():
+  threaddict[key].join()
+
  # for file in filelist:
  #         ziph.write(settings.MEDIA_ROOT + query_term +'/' +file, basename(settings.MEDIA_ROOT + query_term +'/' +file))
  # ziph.close()
@@ -86,4 +90,10 @@ def gallery(request, query_term):
     filelist = IS.save_imgs(urllist=real_imglist, query_name=query.term)
     template = loader.get_template('smartrez/gallery.html')
     context = {'query': query, 'filelist': filelist}
+    return HttpResponse(template.render(context, request))
+def gallery_l(request, query_term):
+    query = get_object_or_404(SearchQuery, term=query_term)
+    filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited', f))]
+    template = loader.get_template('smartrez/gallery.html')
+    context = {'query' : query, 'filelist' : filelist}
     return HttpResponse(template.render(context, request))

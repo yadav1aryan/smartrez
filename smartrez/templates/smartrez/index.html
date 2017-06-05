@@ -44,12 +44,40 @@
 </form>
 <div ng-view class="col-xs-2"></div>
 </div>
+<div class="row">
+<div ng-view class="col-xs-5"></div>
+<div ng-view class="col-xs-5">
+<h1>Gallery</h1>
+<form id = "gal" action="">
+{% csrf_token %}
+{% for query in querylist %}
+<div class='galopt'>
+<input type="radio" name="query" id="gallery{{forloop.counter}}" value="{{query}}" />
+<label for="#gallery{{forloop.counter}}">{{query}}</label></div>
+{% endfor %}
+</div>
+</div>
+<br>
+<br>
+<div class="row">
+<div ng-view class="col-xs-5"></div>
+<div ng-view class="col-xs-4">
+<input id="galsub" type="submit" value="Open Gallery" class="btn btn-info">
+</div>
+<div ng-view class="col-xs-4"></div>
+</form>
 </div>
 </body>
 <script>
 $(document).ready(function(){
  $('.opt label').on('click', function(){
   $(this).parent().find("input[name='type']").prop('checked', true)
+});
+ $('.galopt label').on('click', function(){
+  $(this).parent().find("input[name='query']").prop('checked', true);
+});
+$('#gal input').on('click', function() {
+  $('#gal').attr('action', '/smartrez/' + $(this).val() + '/gallery_l');
 });
 });
 </script>

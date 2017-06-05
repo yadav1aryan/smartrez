@@ -49,6 +49,7 @@ class ImageScraper:
     threaddict[counter].daemon = True
     threaddict[counter].start()
     counter += 1
-  threaddict[counter-1].join()
+  for key in threaddict.keys():
+   threaddict[key].join()
   onlyfiles = [f for f in listdir(settings.MEDIA_ROOT + query_name +'/edited') if isfile(join(settings.MEDIA_ROOT + query_name +'/edited', f))]
   return onlyfiles
