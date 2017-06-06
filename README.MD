@@ -1,5 +1,6 @@
 # Smartrez  
 Dependencies:  
+ python-3  
  django  
   `Available on PyPi`  
  python-pixabay  
