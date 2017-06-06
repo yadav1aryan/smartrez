@@ -11,7 +11,6 @@ url(r'^(?P<query_term>[\w\-]+)/gallery_l/$', views.gallery_l, name='gallery_l'),
 url(r'^q_create$', views.q_create, name='q_create'),
 url(r'^(?P<query_term>[\w\-]+)/resize/$', views.resize, name='resize'),
 url(r'^(?P<query_term>[\w\-]+)/restore/$', views.restore, name='restore'),
-url(r'^(?P<query_term>[\w\-]+)/delete/$', views.delete, name='delete'),
-url(r'^(?P<query_term>[\w\-]+)/download/$', views.download, name='download')
+url(r'^(?P<query_term>[\w\-]+)/delete/$', views.delete, name='delete')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #handles serving of media files from smartresize/media/q_results, so in teh webpage, /smartrez/media/ is actually .../smartresize/media/q_results/
 

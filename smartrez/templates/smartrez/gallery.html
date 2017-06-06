@@ -2,40 +2,89 @@
 <html>
 <head>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; 
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+} 
 html {
  padding: 5%;
  text-align: center;
 }
 .main.sel {
- border: 2px solid #99ff66;
+ border: 2px solid #99ff66 !important;
 }
 .main{
-    margin: 25px;
-    border: 2px solid #ccc;
+    margin: 25px !important;
+    border: 2px solid #ccc !important;
     -webkit-transition: all 0.4s ease-in-out;
     transition: border 0.4s;
-    display: inline-block;
-    width: 200px;
+    display: inline-block !important;
+    width: 200px !important;
 }
 .main:hover {
- border: 2px solid #99ff66;
+ border: 2px solid #99ff66 !important;
+ -webkit-transition: all 0.4s ease-in-out;
+ transition: border 0.4s;
+}
+.del.select {
+ border: 2px solid #99ff66 !important;
+}
+.del{
+    margin: 25px !important;
+    border: 2px solid #ccc !important;
+    -webkit-transition: all 0.4s ease-in-out;
+    transition: border 0.4s;
+    display: inline-block !important;
+    width: 200px !important;
+}
+.del:hover {
+ border: 2px solid #99ff66 !important;
  -webkit-transition: all 0.4s ease-in-out;
  transition: border 0.4s;
 }
 .image{
-    height:150px;
-    width:200px;
-    z-index: 99;
-    float: left;
+    height:150px !important;
+    width:200px !important;
+    z-index: 99 !important;
+    float: left !important;
 }
 .check{
-    float: right;
-    z-index: 100;
-    margin: -150px 0px 0px;
+    float: right !important;
+    z-index: 100 !important;
+    margin: -150px 0px 0px !important;
     cursor: pointer;
-    width: 15px;
-    height: 15px;
+    width: 15px !important;
+    height: 15px !important;
 }
 </style>
 </head>
@@ -51,26 +100,61 @@ html {
 {% csrf_token %}
  <input type="hidden" name = "act_img" id="act_img" value="" size="40"/>
  <input type="text" name = "width" placeholder="Width"/> x <input type="text" name = "height" placeholder="Height"/>
- <input id="sub" type="submit" value="Resize" class="btn btn-info">
+ <input id="sub" type="submit" value="Resize" class="btn btn-success">
 </form>
 <form action="{% url 'smartrez:restore' query.term %}" method = "post">
 {% csrf_token %}
 <input type="hidden" name = "restore" id="restore" value="" size="40"/>
 <input id="restorebut" type="submit" value="Restore selected images from backup" class="btn btn-info">
 </form>
+<div class="modal" id="myModal">
+<div class="modal-content">
+    <span class="close">&times;</span>
+{% for file in filelist %}
+     <div class = "del">
+         <img id="img{{forloop.counter}}" class ="image" src="/smartrez{{MEDIA_URL}}{{query.term}}/edited/{{file}}?time={{time}}" alt="{{query.term}}_img_{{forloop.counter}}" value="{{file}}">
+         <input type="checkbox" class="check" id="check{{forloop.counter}}"/>
+     </div>
+{% endfor %}
 <form action="{% url 'smartrez:delete' query.term %}" method = "post">
 {% csrf_token %}
 <input type="hidden" name = "delete" id="delete" value="" size="40"/>
-<input id="deletebut" type="submit" value="Delete selected images" class="btn btn-info">
+<input id="deletebut" type="submit" value="Delete selected images" class="btn btn-danger">
 </form>
-<form action="{% url 'smartrez:download' query.term %}" method = "post">
-{% csrf_token %}
-<input type="hidden" name = "download" id="download" value="" size="40"/>
-<input id="downloadbut" type="submit" value="Download selected images" class="btn btn-info">
-</form>
+</div>
+</div>
+<br>
+<button id="myBtn" class="btn btn-danger">Delete images</button>
+
+<br>
+<a href="/smartrez/"><button id="myBtn" class="btn btn-warning">Go Home</button></a>
+<br>
+<h3>Download images from last operation</h3>
+<br>
+<a href="/smartrez{{MEDIA_URL}}{{query.term}}/{{editedzipname}}" download="smartrez_{{editedzipname}}"><button type="button" class="btn btn-success">Download Edited</button></a>
+<br>
+<a href="/smartrez{{MEDIA_URL}}{{query.term}}/{{originalzipname}}" download="smartrez_{{originalzipname}}"><button type="button" class="btn btn-success">Download Original</button></a>
 <script>
 $(document).ready(function(){
   console.log('ready');
+  $('.main img').each(function() {
+    $(this).parent().addClass('sel');
+    $(this).parent().find('.check').prop('checked', true);
+});
+var modal = document.getElementById('myModal');
+var btn = document.getElementById("myBtn");
+var span = document.getElementsByClassName("close")[0];
+btn.onclick = function() {
+    modal.style.display = "block";
+}
+span.onclick = function() {
+    modal.style.display = "none";
+}
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+} 
   $('.main img').on('click', function(){
     if($(this).parent().hasClass('sel') == true) {
      $(this).parent().removeClass('sel')
@@ -82,7 +166,17 @@ $(document).ready(function(){
     console.log('log');
     }
   });
-
+  $('.del img').on('click', function(){
+    if($(this).parent().hasClass('select') == true) {
+     $(this).parent().removeClass('select')
+     $(this).parent().find('.check').prop('checked', false);
+    }
+    else {
+    $(this).parent().addClass('select');
+    $(this).parent().find('.check').prop('checked', true);
+    console.log('log');
+    }
+  });
 $('#sub').on('click', function() {
    $('.main img').each(function() {
     console.log($(this).attr('src'));
@@ -103,9 +197,9 @@ $('#restorebut').on('click', function() {
    });
    });
 $('#deletebut').on('click', function() {
-   $('.main img').each(function() {
+   $('.del img').each(function() {
     console.log($(this).attr('src'));
-    if($(this).parent().hasClass('sel') == true) {
+    if($(this).parent().hasClass('select') == true) {
     var prevact = $('#delete').val();
     $('#delete').val(prevact + $(this).attr('value') + ',');
    }

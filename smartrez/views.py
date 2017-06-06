@@ -16,6 +16,14 @@ from os.path import isfile, join
 from os.path import basename
 import zipfile
 from shutil import copyfile
+def zipmaker(filelist, query_term): #zipmaker called on every image operation to keep zips ready for download
+    ziph = zipfile.ZipFile(settings.MEDIA_ROOT + query_term +'/' + 'edited_' +query_term + '.zip', 'w', zipfile.ZIP_DEFLATED) #edited
+    zipo = zipfile.ZipFile(settings.MEDIA_ROOT + query_term +'/' + 'original_' +query_term + '.zip', 'w', zipfile.ZIP_DEFLATED) #original
+    for file in filelist:
+        ziph.write(settings.MEDIA_ROOT + query_term +'/edited/' +file, basename(settings.MEDIA_ROOT + query_term +'/edited/' +file)) #using basename so server directories arent copied
+        zipo.write(settings.MEDIA_ROOT + query_term + '/base/' + file,basename(settings.MEDIA_ROOT + query_term + '/base/' + file))
+    ziph.close() #this stuff is to be put into a download view
+    zipo.close()
 def q_create(request): # View is called from the first index page from the search button
   name = request.POST['term'].replace(' ','_').lower() #get search query from the POST request
   try:
@@ -50,18 +58,19 @@ def results(request, query_term): #results page view
 def smartcrop(width, height, query_term, file): #function to run in threads to massively speed up operation time
     subprocess.run(['smartcrop --width %s --height %s "%s" "%s"' % (width, height, (settings.MEDIA_ROOT + query_term + '/edited/' + file), (settings.MEDIA_ROOT + query_term + '/edited/' + file))],shell=True)
     subprocess.run(['magick %s -compress JPEG -quality 80 %s' % ((settings.MEDIA_ROOT + query_term + '/edited/' + file), (settings.MEDIA_ROOT + query_term + '/edited/' + file))],shell=True)
-def restore(request, query_term):
+def restore(request, query_term): #restore images from maintained base folder
     query = get_object_or_404(SearchQuery, term=query_term)
-    restorefilestring = request.POST['restore']
+    restorefilestring = request.POST['restore'] #get the restore from the post request
     restorefilelist = restorefilestring.split(',')
     restorelist = restorefilelist[:-1]
     for file in restorelist:
         copyfile(settings.MEDIA_ROOT + '%s/base/%s' % (query_term, file),settings.MEDIA_ROOT + '%s/edited/%s' % (query_term, file))
         template = loader.get_template('smartrez/gallery.html')
     filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited', f))]
-    context = {'query': query, 'filelist': filelist, 'time': int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
+    zipmaker(filelist,query_term) #make zips
+    context = {'editedzipname' : 'edited_' + query_term + '.zip','originalzipname' : 'original_' + query_term + '.zip','query': query, 'filelist': filelist, 'time': int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
     return HttpResponse(template.render(context, request))
-def delete(request, query_term):
+def delete(request, query_term): #delete images from base and edited directory, permanent loss
     query = get_object_or_404(SearchQuery, term=query_term)
     restorefilestring = request.POST['delete']
     restorefilelist = restorefilestring.split(',')
@@ -71,7 +80,8 @@ def delete(request, query_term):
          os.remove(settings.MEDIA_ROOT + '%s/edited/%s' % (query_term, file))
     template = loader.get_template('smartrez/gallery.html')
     filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited', f))]
-    context = {'query': query, 'filelist': filelist, 'time': int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
+    zipmaker(filelist,query_term) #zips
+    context = {'editedzipname' : 'edited_' + query_term + '.zip','originalzipname' : 'original_' + query_term + '.zip','query': query, 'filelist': filelist, 'time': int(round(time.time()))}  # sending list of filenames back to gallery so it can load pictures
     return HttpResponse(template.render(context, request))
 def resize(request, query_term): #resize function
  query = get_object_or_404(SearchQuery, term=query_term)  # get query
@@ -90,8 +100,9 @@ def resize(request, query_term): #resize function
  for key in threaddict.keys(): #wait for all threads to finish
   threaddict[key].join()
  print(filelist)
+ zipmaker(filelist, query_term)
  template = loader.get_template('smartrez/gallery.html')
- context = {'query' : query, 'filelist' : filelist, 'time' : int(round(time.time()))} #sending list of filenames back to gallery so it can load pictures
+ context = {'editedzipname' : 'edited_' + query_term + '.zip','originalzipname' : 'original_' + query_term + '.zip','query' : query, 'filelist' : filelist, 'time' : int(round(time.time()))} #sending list of filenames back to gallery so it can load pictures
  return HttpResponse(template.render(context, request))
 def gallery(request, query_term): #gallery view, all submit buttons post to this view, so each image in the actimg post gets its use no. increased, will be moved to download view
     query = get_object_or_404(SearchQuery, term=query_term)
@@ -106,26 +117,14 @@ def gallery(request, query_term): #gallery view, all submit buttons post to this
         real_imglist.append(q_obj.img_url)
     IS = ImageScraper()
     filelist = IS.save_imgs(urllist=real_imglist, query_name=query.term) #call the image downloader with your selected urls
+    zipmaker(filelist,query_term)
     template = loader.get_template('smartrez/gallery.html')
-    context = {'query': query, 'filelist': filelist, 'time' : int(round(time.time()))}
+    context = {'editedzipname' : 'edited_' + query_term + '.zip','originalzipname' : 'original_' + query_term + '.zip','query': query, 'filelist': filelist, 'time' : int(round(time.time()))}
     return HttpResponse(template.render(context, request))
 def gallery_l(request, query_term): #gallery loader view
     query = get_object_or_404(SearchQuery, term=query_term) #normal gallery view takes POST requests, this does not, cause you wont post anything when you go to a gallery from the homepage
     filelist = [f for f in listdir(settings.MEDIA_ROOT + query_term + '/edited') if isfile(join(settings.MEDIA_ROOT + query_term + '/edited', f))]
+    zipmaker(filelist,query_term)
     template = loader.get_template('smartrez/gallery.html')
-    context = {'query' : query, 'filelist' : filelist, 'time' : int(round(time.time()))}
-    return HttpResponse(template.render(context, request))
-def download(request, query_term):
-    query = get_object_or_404(SearchQuery, term=query_term)
-    filestring = request.POST['download'] #same as the act img in resize
-    filelist = filestring.split(',')
-    filelist = filelist[:-1]
-    ziph = zipfile.ZipFile(settings.MEDIA_ROOT + query_term +'/' + 'edited_' +query_term + '.zip', 'w', zipfile.ZIP_DEFLATED)
-    zipo = zipfile.ZipFile(settings.MEDIA_ROOT + query_term +'/' + 'original_' +query_term + '.zip', 'w', zipfile.ZIP_DEFLATED)
-    for file in filelist:
-        ziph.write(settings.MEDIA_ROOT + query_term +'/edited/' +file, basename(settings.MEDIA_ROOT + query_term +'/edited/' +file))
-        zipo.write(settings.MEDIA_ROOT + query_term + '/base/' + file,basename(settings.MEDIA_ROOT + query_term + '/base/' + file))
-    ziph.close() #this stuff is to be put into a download view
-    context = {'editedzipname' : 'edited_' + query_term + '.zip', 'query' : query,'originalzipname' : 'original_' + query_term + '.zip'}
-    template = loader.get_template('smartrez/resized.html')
+    context = {'editedzipname' : 'edited_' + query_term + '.zip','originalzipname' : 'original_' + query_term + '.zip','query' : query, 'filelist' : filelist, 'time' : int(round(time.time()))}
     return HttpResponse(template.render(context, request))
